@@ -1,0 +1,19 @@
+#To Use with Real PTB-XL Data:
+#Replace CELL 2 with this code to download real PTB-XL data:
+# Download PTB-XL dataset (warning: large download ~22GB)
+!wget -r -N -c -np https://physionet.org/files/ptb-xl/1.0.3/
+
+# Then modify the data loading to use real PTB-XL files
+import wfdb
+import ast
+
+def load_ptb_xl_data(data_path):
+    # Load database
+    Y = pd.read_csv(f'{data_path}/ptbxl_database.csv', index_col='ecg_id')
+    Y.scp_codes = Y.scp_codes.apply(lambda x: ast.literal_eval(x))
+    
+    # Load signals (using 100Hz version for faster processing)
+    X = [wfdb.rdsamp(f'{data_path}/records100/hr{str(idx).zfill(5)}')[0] 
+         for idx in Y.index[:1000]]  # First 1000 samples for demo
+    
+    return np.array(X), Y
